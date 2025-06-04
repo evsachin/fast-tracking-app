@@ -1,0 +1,190 @@
+import React from "react";
+import { useTimer } from "../context/TimerContext";
+
+const formatTime = (seconds) => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return { hours: h, minutes: m, seconds: s };
+};
+
+export default function Timer() {
+  const { isRunning, elapsed, startTimer, stopTimer } = useTimer();
+  const { hours, minutes, seconds } = formatTime(elapsed);
+  
+  // Calculate progress for visual indicators
+  const totalMinutes = hours * 60 + minutes;
+  const progressPercentage = Math.min((totalMinutes / 720) * 100, 100); // 12 hours = 720 minutes
+  
+  // Determine fasting phase
+  let phase = "Starting";
+  let phaseColor = "text-blue-300";
+  let phaseDescription = "Your fasting journey begins";
+  
+  if (totalMinutes >= 720) { // 12+ hours
+    phase = "Deep Fast";
+    phaseColor = "text-green-300";
+    phaseDescription = "Maximum benefits achieved";
+  } else if (totalMinutes >= 480) { // 8+ hours
+    phase = "Fat Burning";
+    phaseColor = "text-orange-300";
+    phaseDescription = "Body switching to fat for energy";
+  } else if (totalMinutes >= 240) { // 4+ hours
+    phase = "Metabolic Switch";
+    phaseColor = "text-yellow-300";
+    phaseDescription = "Insulin levels dropping";
+  } else if (totalMinutes >= 60) { // 1+ hours
+    phase = "Early Phase";
+    phaseColor = "text-purple-300";
+    phaseDescription = "Digestion completing";
+  }
+  
+  return (
+    <div className="text-center space-y-8 w-full max-w-2xl mx-auto">
+      {/* Main Timer Display */}
+      <div className="relative">
+        {/* Outer glow ring */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 blur opacity-20 animate-pulse"></div>
+
+        {/* Timer circle */}
+        <div className="relative w-80 h-80 mx-auto">
+          {/* Background circle */}
+          <div className="absolute inset-0 rounded-full bg-white/5 backdrop-blur border border-white/20"></div>
+
+          {/* Progress ring */}
+          <svg
+            className="absolute inset-0 w-full h-full transform -rotate-90"
+            viewBox="0 0 100 100"
+          >
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke="rgba(255,255,255,0.1)"
+              strokeWidth="2"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke="url(#gradient)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray={`${progressPercentage * 2.83} 283`}
+              className="transition-all duration-1000 ease-out"
+            />
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#8B5CF6" />
+                <stop offset="50%" stopColor="#EC4899" />
+                <stop offset="100%" stopColor="#F59E0B" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          {/* Timer content */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-center space-y-2">
+              {/* Time display */}
+              <div className="space-y-1">
+                <div className="text-5xl font-bold text-white">
+                  {String(hours).padStart(2, "0")}
+                </div>
+                <div className="flex items-center justify-center space-x-4 text-2xl font-semibold text-white/80">
+                  <span>{String(minutes).padStart(2, "0")}</span>
+                  <span className="text-white/40">:</span>
+                  <span>{String(seconds).padStart(2, "0")}</span>
+                </div>
+                <div className="text-xs text-white/60 tracking-wider">
+                  HOURS MINUTES SECONDS
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Fasting Phase Indicator */}
+      <div className="space-y-3">
+        <div className={`text-xl font-semibold ${phaseColor}`}>{phase}</div>
+        <div className="text-purple-200/70 text-sm">{phaseDescription}</div>
+
+        {/* Progress bar */}
+        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-1000 ease-out"
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
+        </div>
+        <div className="text-xs text-white/60">
+          {Math.round(progressPercentage)}% to 12-hour milestone
+        </div>
+      </div>
+
+      {/* Button content */}
+      <div className="relative flex items-center justify-center space-x-3">
+        {isRunning ? (
+          <>
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 10h6v4H9z"
+              />
+            </svg>
+            <span>Stop Fasting</span>
+          </>
+        ) : (
+          <>
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>Start Fasting</span>
+          </>
+        )}
+      </div>
+
+      {/* Quick Stats */}
+      {elapsed > 0 && (
+        <div className="grid grid-cols-2 gap-4 mt-8">
+          <div className="text-center p-4 rounded-xl bg-white/5 backdrop-blur border border-white/10">
+            <div className="text-2xl font-bold text-white mb-1">
+              {Math.round((elapsed / 3600) * 10) / 10}
+            </div>
+            <div className="text-xs text-purple-200/70">Hours Fasted</div>
+          </div>
+          <div className="text-center p-4 rounded-xl bg-white/5 backdrop-blur border border-white/10">
+            <div className="text-2xl font-bold text-white mb-1">
+              {Math.round((elapsed / 3600) * 0.5 * 10) / 10}
+            </div>
+            <div className="text-xs text-purple-200/70">Calories Burned</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
