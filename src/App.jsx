@@ -108,7 +108,7 @@ export default function App() {
       <Router>
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
           <Navigation />
-          <main className="max-w-4xl mx-auto px-2 py-2">
+          <main className="max-w-4xl mx-auto px-0 py-0">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/history" element={<HistoryPage />} />
